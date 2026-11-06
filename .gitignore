@@ -7,3 +7,4 @@ data/*.db*
 # n8n-as-code: local sync state + auto-generated type stubs
 workflows/.n8n-state.json
 workflows/n8n-workflows.d.ts
+workflows/.n8n-sync-events.jsonl
