@@ -2,14 +2,13 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 
 // <workflow-map>
 // Workflow : crepe home
-// Nodes   : 5  |  Connections: 3
+// Nodes   : 4  |  Connections: 3
 //
 // NODE INDEX
 // ──────────────────────────────────────────────────────────────────
 // Property name                    Node type (short)         Flags
 // TelegramTrigger                    telegramTrigger            [creds]
 // CodeInJavascript                   code
-// AppendRowInSheet                   googleSheets               [creds]
 // SendATextMessage                   telegram                   [creds]
 // HttpRequest                        httpRequest
 //
@@ -18,8 +17,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // TelegramTrigger
 //    → CodeInJavascript
 //      → HttpRequest
-// AppendRowInSheet
-//    → SendATextMessage
+//        → SendATextMessage
 // </workflow-map>
 
 // =====================================================================
@@ -31,7 +29,6 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
     name: 'crepe home',
     active: true,
     isArchived: false,
-    projectId: 'yjKa7zz0t0LP3t2k',
     settings: { executionOrder: 'v1', binaryMode: 'separate', availableInMCP: true },
 })
 export class CrepeHomeWorkflow {
@@ -91,65 +88,6 @@ return orders.map(order => ({ json: order }));
     };
 
     @node({
-        id: '43bfb30a-eb7f-44ac-b9cd-2feee7013957',
-        name: 'Append row in sheet',
-        type: 'n8n-nodes-base.googleSheets',
-        version: 4.7,
-        position: [272, -192],
-        credentials: { googleSheetsOAuth2Api: { id: '6JwBJOQl0iimeFgk', name: 'Google Sheets account 2' } },
-    })
-    AppendRowInSheet = {
-        operation: 'append',
-        documentId: {
-            __rl: true,
-            value: '1-RQZcsF7484adpfeWVNxSU762_RTNdJh_iDKBG6eRg0',
-            mode: 'list',
-            cachedResultName: 'crepe_home',
-            cachedResultUrl:
-                'https://docs.google.com/spreadsheets/d/1-RQZcsF7484adpfeWVNxSU762_RTNdJh_iDKBG6eRg0/edit?usp=drivesdk',
-        },
-        sheetName: {
-            __rl: true,
-            value: 'gid=0',
-            mode: 'list',
-            cachedResultName: 'الورقة1',
-            cachedResultUrl:
-                'https://docs.google.com/spreadsheets/d/1-RQZcsF7484adpfeWVNxSU762_RTNdJh_iDKBG6eRg0/edit#gid=0',
-        },
-        columns: {
-            mappingMode: 'defineBelow',
-            value: {
-                Amount: '={{ $json.quantity }}',
-                'Item Name': '={{ $json.type }}',
-            },
-            matchingColumns: [],
-            schema: [
-                {
-                    id: 'Amount',
-                    displayName: 'Amount',
-                    required: false,
-                    defaultMatch: false,
-                    display: true,
-                    type: 'string',
-                    canBeUsedToMatch: true,
-                },
-                {
-                    id: 'Item Name',
-                    displayName: 'Item Name',
-                    required: false,
-                    defaultMatch: false,
-                    display: true,
-                    type: 'string',
-                    canBeUsedToMatch: true,
-                },
-            ],
-            attemptToConvertTypes: false,
-            convertFieldsToString: false,
-        },
-        options: {},
-    };
-
-    @node({
         id: '3ea16d03-1d6f-4cfb-980c-c55db8a7a78d',
         webhookId: '1b033d8f-f74b-49a6-ad6e-cad56ad7c5ba',
         name: 'Send a text message',
@@ -159,9 +97,11 @@ return orders.map(order => ({ json: order }));
         credentials: { telegramApi: { id: 'fdEvzhUHPg614NZk', name: 'Telegram account' } },
     })
     SendATextMessage = {
+        resource: 'message',
+        operation: 'sendMessage',
         chatId: "={{ $('Telegram Trigger').item.json.message.chat.id }}",
         text: `=عميلنا العزيز تم استقبال طلبك بنجاح
-{{ $json.Amount }} {{ $json['Item Name'] }}`,
+{{ $json.quantity }} {{ $json.item_name }}`,
         additionalFields: {
             appendAttribution: false,
         },
@@ -192,6 +132,6 @@ return orders.map(order => ({ json: order }));
     defineRouting() {
         this.TelegramTrigger.out(0).to(this.CodeInJavascript.in(0));
         this.CodeInJavascript.out(0).to(this.HttpRequest.in(0));
-        this.AppendRowInSheet.out(0).to(this.SendATextMessage.in(0));
+        this.HttpRequest.out(0).to(this.SendATextMessage.in(0));
     }
 }
