@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node -v)",
+      "PowerShell(npm -v)",
+      "PowerShell(npm install next@latest react@latest react-dom@latest better-sqlite3 2>&1)",
+      "PowerShell(npm install -D typescript @types/node @types/react @types/react-dom @types/better-sqlite3 2>&1)",
+      "PowerShell(npx next dev -p 3000)"
+    ]
+  }
+}
